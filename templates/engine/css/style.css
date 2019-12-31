@@ -1,0 +1,118 @@
+@import url(opensans.css);
+body {
+  font-family: "Open Sans Light";
+  font-size: 16px;
+}
+.logo {
+  display: block;
+  position: relative;
+  width: 180px;
+  height: 60px;
+  margin: 5px auto;
+  background: url("../img/logo.png") no-repeat;
+}
+.itt-btn {
+  background: #20b2aa;
+  color: #ffffff;
+  border: none;
+  width: 250px;
+  height: 40px;
+  text-transform: uppercase;
+}
+.itt-btn:hover {
+  background: #29c3bb;
+}
+.user-block {
+  display: block;
+  position: relative;
+  padding-top: 10px;
+  text-align: right;
+}
+.user-block #cyty {
+  border: none;
+  background: transparent;
+}
+.user-block .itt-login {
+  color: #201f1f;
+  text-decoration: none;
+}
+.bg-header {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 250px;
+  background: url("../img/background-header.jpg") no-repeat 100%;
+}
+.bg-header .bg {
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+}
+.bg-header .bg h1 {
+  font-family: "Open Sans ExtraBold";
+  font-size: 48px;
+  color: #ffffff;
+  text-align: center;
+  margin-top: 26px;
+}
+.bg-header .bg .users-block {
+  display: block;
+  position: relative;
+  width: 80%;
+  margin: 0 auto;
+  text-align: center;
+}
+.bg-header .bg .users-block .user-block {
+  display: inline-block;
+  position: relative;
+  width: 100px;
+  text-align: center;
+  color: #ffffff;
+  margin: 0 37px;
+}
+.bg-header .bg .users-block .user-block div {
+  height: 100px;
+  border: 3px solid #ff8400;
+  border-radius: 50px;
+  overflow: hidden;
+}
+.bg-header .bg .users-block .user-block div img {
+  width: 100px;
+  height: 100px;
+}
+.login-form {
+  display: block;
+  position: relative;
+  margin: 70px auto;
+  width: 90%;
+  box-shadow: 0px 0px 37.62px 0.38px rgba(0, 0, 0, 0.42);
+  -moz-box-shadow: 0px 0px 37.62px 0.38px rgba(0, 0, 0, 0.42);
+  -webkit-box-shadow: 0px 0px 37.62px 0.38px rgba(0, 0, 0, 0.42);
+  padding: 26px;
+}
+.login-form .tel-block {
+  display: none;
+}
+.login-form h3 {
+  text-align: center;
+}
+.login-form small {
+  display: block;
+  text-align: center;
+}
+.login-form .social {
+  text-align: center;
+  font-size: 36px;
+}
+.login-form .social a {
+  text-decoration: none;
+  -moz-transition: all 1s ease-out;
+  -o-transition: all 1s ease-out;
+  -webkit-transition: all 1s ease-out;
+}
+.login-form .social a:hover {
+  color: #1d2124;
+}
+/*# sourceMappingURL=style.css.map */

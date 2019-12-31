@@ -1,0 +1,28 @@
+{
+  "name": "it-tech/crm",
+  "description": "Customer Relationship Management",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Alexander Pokatsky",
+      "email": "weabdizain@gmail.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "php": "^7.1",
+    "it-tech/orm": "dev-master",
+    "it-tech/route": "dev-master",
+    "it-tech/view": "dev-master",
+    "it-tech/cache": "dev-master"
+  },
+  "require-dev": {},
+  "autoload": {
+    "psr-4": {
+      "ITTech\\APP\\": "app/",
+      "ITTech\\Modules\\": "modules/",
+      "ITTech\\Plugins\\": "plug-ins/"
+    }
+  }
+}
