@@ -21,4 +21,14 @@ class Redirect
         header('Location: '.$_SERVER["HTTP_REFERER"]);
         exit;
     }
+
+    /**
+     * Переадресация на указаный URL
+     * @param string $url
+     */
+    public static function to(string $url): void
+    {
+        header('Location: '.$url);
+        exit;
+    }
 }
