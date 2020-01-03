@@ -21,11 +21,8 @@ class Session
         session_start();
     }
 
-    /**
+    /*
      * Регистрация сессии
-     * @param string $sessionKey
-     * @param mixed $sessionValue
-     * @return bool
      */
     protected function session_create(string $sessionKey, $sessionValue): bool
     {
@@ -36,10 +33,8 @@ class Session
         return false;
     }
 
-    /**
+    /*
      * Возврат сессии
-     * @param string $sessionKey
-     * @return bool|mixed
      */
     protected function session_get(string $sessionKey)
     {
@@ -49,6 +44,36 @@ class Session
         }
 
         return false;
+    }
+
+    /*
+     * Временная сессия
+     */
+    protected function session_flash(string $key, $value)
+    {
+        if(!is_null($value))
+        {
+            return $this->session_create($key, $value);
+        }
+
+        if($this->session_get($key))
+        {
+            $value = $this->session_get($key);
+            $this->session_delete($key);
+        }
+
+        return $value;
+    }
+
+    /*
+     * Удалить сессию
+     */
+    protected function session_delete(string $sessionKey): void
+    {
+        if(!empty($_SESSION[$sessionKey]))
+        {
+            unset($_SESSION[$sessionKey]);
+        }
     }
 
     /**
@@ -72,5 +97,28 @@ class Session
     {
         $session = new self();
         return $session->session_get($sessionKey);
+    }
+
+    /**
+     * Создание, выбор временной сессии
+     *
+     * @param string $key
+     * @param null $value
+     * @return bool|mixed
+     */
+    public static function flash(string $key, $value = null)
+    {
+        $session = new self();
+        return $session->session_flash($key, $value);
+    }
+
+    /**
+     * Удалить сессию
+     * @param string $sessionKey
+     */
+    public static function destroy(string $sessionKey)
+    {
+        $session = new self();
+        return $session->session_delete($sessionKey);
     }
 }
