@@ -5,14 +5,17 @@
 <input type="hidden" name="_cache_" value="<?php echo getCache(); ?>">
 ```
 
-1. Страница отправки формы регистрации `/user/register`
+1. Страница отправки формы регистрации `/register`
 2. Шаблон "register.php"
 
 Имена полей для отправки данных
 
-* phone
-* email
-* pass
+> Поля name, phone, email принимают пустые параметры, поэтому отправить можно только одно из них
+
+* name (null)
+* phone (null)
+* email (null)
+* password
 * remember
 
 ### Авторизация пользователя
@@ -30,28 +33,27 @@
 /*
  * Авторизировать пользователя
  * 
- * @param string $login почта или телефон
+ * @param string $login почта, логин или телефон
  * @param string $password пароль
- * @param string $field поля в базе email или phone
  * @param bool $remember запомнить = true
  * @return string
  */
-$user = new \ITTech\Modules\User\User();
-$user->login("login", "pass", "field", "remember");
+\ITTech\Modules\User\Auth::user("login", "password" [,"remember" = false]);
 
 ```
 
-1. Страница отправки формы авторизации /user/login
+1. Страница отправки формы авторизации /login
 2. Шаблон "login.php"
 
 Имена полей для отправки данных
 
-* phone
-* email
-* pass
+* name (null)
+* phone (null)
+* email (null)
+* password
 * remember
 
-> Авторизация происходит по одному из полей "phone" или "email"
+> Авторизация происходит по одному из полей "name", "phone" или "email"
 ### Методы классов
 
 >Опции в базе данных
@@ -98,6 +100,19 @@ $user->login("login", "pass", "field", "remember");
  * @return bool|mixed
  */
 \ITTech\APP\Session::get("session_name");
+
+/**
+ * Создает временную сессию которая уничтожится после перезагрузки страницы
+ * @param string $key ключ сессии
+ * @param string $value значение сессии
+ */
+\ITTech\APP\Session::flash("key", "value");
+
+/**
+ * Возвращает временную сессию, после чего сессия уничтожается
+ * @param string $key ключ сессии
+ */
+\ITTech\APP\Session::flash("key");
 ```
 
 > Переадресация
@@ -109,6 +124,11 @@ $user->login("login", "pass", "field", "remember");
  * Переадресация на предыдущую страницу
  */
 \ITTech\APP\Redirect::back();
+
+/*
+ * Переадресация на указанный URL
+ */
+\ITTech\APP\Redirect::to("url");
 ```
 
 > Запросы
