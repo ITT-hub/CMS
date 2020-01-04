@@ -95,7 +95,7 @@
                   <label class="form-check-label" for="t">С помощью телефона</label>
                </div>
 
-               <form action="/user/login" method="post">
+               <form action="/login" method="post">
                   <input type="hidden" name="_cache_" value="<?php echo getCache(); ?>">
                   <div class="tel-block">
                      <div class="col-auto">
@@ -125,7 +125,7 @@
                         <div class="input-group-prepend">
                            <div class="input-group-text"><i class="icon-circle"></i></div>
                         </div>
-                        <input type="password" name="pass" class="form-control" id="pass" placeholder="Ваш пароль">
+                        <input type="password" name="password" class="form-control" id="pass" placeholder="Ваш пароль">
                      </div>
                   </div>
                   <div class="form-group form-check">

@@ -7,6 +7,8 @@ namespace ITTech\Modules\User;
 
 use ITTech\APP\Controller;
 use ITTech\APP\Main;
+use ITTech\APP\Options;
+use ITTech\APP\Redirect;
 use ITTech\APP\Render;
 use ITTech\APP\Session;
 
@@ -89,25 +91,93 @@ class Auth extends Controller
     }
 
     /**
-     * Вход пользователя
+     * Авторизировать пользователя
+     *
+     * @param string $login
+     * @param string $password
+     * @param bool $remember
      * @return string
      */
-    public function login()
+    public static function user(string $login, string $password, $remember = false)
     {
-        $user   = new User();
-        $method = "email";
+        $class = new self();
+        $user  = self::find_user($login);
 
-        if(empty($_POST["remember"]))
+        if(!$user)
         {
-            $remember = false;
+            return "Пользователя не существует";
+        }
+
+        if($user->enable == 0)
+        {
+            Session::flash("system", "Пользователь не активирован");
+            return Redirect::back();
+        }
+
+        if(password_verify($password, $user->password))
+        {
+            if($remember)
+            {
+                $class->remember($user->id, Options::get("remember_time"));
+            }
+
+            Session::set("user", ["uid" => $user->id, "phone" => $user->phone, "email" => $user->email]);
+            Redirect::back();
         } else {
-            $remember = true;
+            return "Не верно введен пароль";
         }
-        if(!empty($_POST["phone"]))
+    }
+
+    /**
+     * Запомнить пользователя
+     * @param int $userID
+     * @param $remember_time
+     */
+    protected function remember(int $userID, $remember_time)
+    {
+        $user          = UserModel::find($userID);
+        $time          = time() + $remember_time;
+        $filename      = md5($user->email.time());
+        $data["uid"]   = $user->id;
+        $data["phone"] = $user->phone;
+        $data["email"] = $user->email;
+        $data["ip"]    = $_SERVER["REMOTE_ADDR"];
+        $data["time"]  = $time;
+
+        if(file_put_contents(Main::$root."/tmp/cache/".$filename, serialize($data)))
         {
-            $method = "phone";
+            $user->remember_password = $filename;
+            setcookie("user", $filename, $time, "/");
+            $user->save();
+        }
+    }
+
+    /*
+     * Проверить существование пользователя
+     */
+    protected static function find_user($login)
+    {
+        $user = UserModel::where("name", $login)->get();
+
+        if(empty($user))
+        {
+            $user = UserModel::where("email", $login)->get();
+        }
+        if(empty($user))
+        {
+            $user = UserModel::where("phone", $login)->get();
         }
 
-        return $user->login($_POST[$method], $_POST["pass"], $method,  $remember);
+        if(empty($user))
+        {
+            $user = UserModel::where("phone", $login)->get();
+        }
+
+        if(!empty($user))
+        {
+            return $user[0];
+        }
+
+        return false;
     }
 }

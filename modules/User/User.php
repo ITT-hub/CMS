@@ -29,7 +29,7 @@ class User extends Controller
     public static function route()
     {
         Route::set("/login", __NAMESPACE__."\\Auth", "login_form");
-        Route::set("/login", __NAMESPACE__."\\Auth", "login", "post");
+        Route::set("/login", __CLASS__, "login", "post");
         Route::set("/register", __CLASS__, "registerForm");
         Route::set("/register", __CLASS__, "create", "post");
 
@@ -43,8 +43,18 @@ class User extends Controller
     {
         try {
             $model          = new UserModel();
-            $model->email   = $_POST["email"];
-            $model->phone   = $_POST["phone"];
+            if(!empty($_POST["email"]))
+            {
+                $model->email   = $_POST["email"];
+            }
+            if(!empty($_POST["phone"]))
+            {
+                $model->phone   = $_POST["phone"];
+            }
+            if(!empty($_POST["name"]))
+            {
+                $model->name    = $_POST["name"];
+            }
 
             if($_POST["password"] == $_POST["remember"])
             {
@@ -132,58 +142,32 @@ class User extends Controller
 
     /**
      * Авторизировать пользователя
-     * @param string $login
-     * @param string $password
-     * @param string $field
-     * @param bool $remember
      * @return string
      */
-    public function login(string $login, string $password, string $field, $remember = true): string
+    public function login()
     {
-        $user = UserModel::where($field, $login)->get();
-
-        if(count($user) > 0)
+        if(!empty($_POST["name"]))
         {
-            if(password_verify($password, $user[0]->password))
-            {
-                if($remember)
-                {
-                    $this->remember($user[0]->id, 3600 * 24);
-                }
-
-                Session::set("user", ["uid" => $user[0]->id, "phone" => $user[0]->phone, "email" => $user[0]->email]);
-                Redirect::back();
-            } else {
-                return "Не верно введен пароль";
-            }
+            $login = $_POST["name"];
+        }
+        if(!empty($_POST["email"]))
+        {
+            $login = $_POST["email"];
+        }
+        if(!empty($_POST["phone"]))
+        {
+            $login = $_POST["phone"];
+        }
+        if(empty($_POST["remember"]))
+        {
+            $remember = false;
+        } else {
+            $remember = true;
         }
 
-        return "Пользователя не существует";
+        return Auth::user($login, $_POST["password"], $remember);
     }
 
-    /**
-     * Запомнить пользователя
-     * @param int $userID
-     * @param $remember_time
-     */
-    protected function remember(int $userID, $remember_time)
-    {
-        $user          = UserModel::find($userID);
-        $time          = time() + $remember_time;
-        $filename      = md5($user->email.time());
-        $data["uid"]   = $user->id;
-        $data["phone"] = $user->phone;
-        $data["email"] = $user->email;
-        $data["ip"]    = $_SERVER["REMOTE_ADDR"];
-        $data["time"]  = $time;
-
-        if(file_put_contents(Main::$root."/tmp/cache/".$filename, serialize($data)))
-        {
-            $user->remember_password = $filename;
-            setcookie("user", $filename, $time, "/");
-            $user->save();
-        }
-    }
 
     /**
      * Форма регистрации пользователя
