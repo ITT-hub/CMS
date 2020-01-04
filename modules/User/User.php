@@ -6,6 +6,7 @@
 namespace ITTech\Modules\User;
 
 use ITTech\APP\Controller;
+use ITTech\APP\eMail;
 use ITTech\APP\Main;
 use ITTech\APP\Options;
 use ITTech\APP\Redirect;
@@ -21,15 +22,18 @@ use ITTech\Lib\Route;
  */
 class User extends Controller
 {
+    private $cache = null;
     /**
      * Маршрутизация
      */
     public static function route()
     {
-        Route::set("/user/login", __NAMESPACE__."\\Auth", "login_form");
-        Route::set("/user/login", __NAMESPACE__."\\Auth", "login", "post");
-        Route::set("/user/register", __CLASS__, "registerForm");
-        Route::set("/user/register", __CLASS__, "create", "post");
+        Route::set("/login", __NAMESPACE__."\\Auth", "login_form");
+        Route::set("/login", __NAMESPACE__."\\Auth", "login", "post");
+        Route::set("/register", __CLASS__, "registerForm");
+        Route::set("/register", __CLASS__, "create", "post");
+
+        Route::set("/user/confirm", __CLASS__, "user_confirm");
     }
 
     /**
@@ -38,30 +42,92 @@ class User extends Controller
     public function create()
     {
         try {
-            $model        = new UserModel();
-            $model->email = $_POST["email"];
-            $model->tel   = $_POST["phone"];
+            $model          = new UserModel();
+            $model->email   = $_POST["email"];
+            $model->phone   = $_POST["phone"];
 
-            if($_POST["pass"] == $_POST["remember"])
+            if($_POST["password"] == $_POST["remember"])
             {
-                $model->password = password_hash($_POST["pass"], PASSWORD_DEFAULT);
+                $model->password = password_hash($_POST["password"], PASSWORD_DEFAULT);
             } else {
                 exit("Пароль не совпадает с проверкой");
             }
-            $model->enable = Options::get("register");
 
-            if($model->save())
+            if(Options::get("register") == 0)
             {
-                Render::title("Регистрация");
-                Render::desc("Создать нового пользователя");
-                Render::content("Регистрация завершена!");
+                $this->cache = md5($_SERVER["HTTP_HOST"]."-".time());
+                $model->remember_password = $this->cache;
+            }
+            $model->enable = Options::get("register");
+            $result        = $model->save();
 
-                return $this->render("register.php");
+            if($result)
+            {
+                $this->confirm($result);
+                Session::flash("system", "Регистрация завершена");
+                return Redirect::to("/");
             }
         } catch (\Exception $e)
         {
             echo "Ошибка: ".$e->getMessage();
         }
+    }
+
+    /*
+     * Отправка подтверждения почты
+     */
+    protected function confirm(int $userID): void
+    {
+        if(Options::get("register") == 0)
+        {
+            $cache = $this->cache;
+
+            ob_start();
+            include __DIR__."/template/confirm_email.php";
+            $str = ob_get_contents();
+            ob_end_clean();
+
+            $user = UserModel::find($userID);
+            $user->remember_password = $cache;
+
+            if($user->save())
+            {
+                $mail  = new eMail($user->email, "Подтверждение почты ".Options::get("site_name"));
+                $wMail = new eMail(Options::get("admin_email"), "Регистрация пользователя ".Options::get("site_name"));
+
+                $mail->from(Options::get("support_email"));
+                $mail->send($str);
+                $wMail->send("Новый идентификатор пользователя ".$userID);
+            }
+        }
+    }
+
+    /**
+     * Подтверждение почты пользователя
+     */
+    public function user_confirm()
+    {
+        if(!empty($_GET["_cache"]) && !is_null($_GET["_cache"]))
+        {
+            $user = UserModel::where("remember_password", $_GET["_cache"])->get();
+            $time = 3600 * 72 + strtotime($user[0]->created); // Время на подтверждение 3 суток
+
+            if($time <= time())
+            {
+                exit("Истек срок подтверждения");
+            }
+
+            $user[0]->remember_password = null;
+            $user[0]->enable = 1;
+
+            if($user[0]->save())
+            {
+                Session::flash("system", "Почта подтверждена");
+                Redirect::to("/");
+            }
+        }
+
+        exit("Не верный параметр запроса");
     }
 
     /**

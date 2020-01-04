@@ -80,4 +80,14 @@ class Request
             }
         }
     }
+
+    public static function getTemplate(string $templateFile)
+    {
+        ob_start();
+        include $templateFile;
+        $str = ob_get_contents();
+        ob_end_clean();
+
+        return $str;
+    }
 }

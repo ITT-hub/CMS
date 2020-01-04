@@ -115,4 +115,11 @@ body {
 .login-form .social a:hover {
   color: #1d2124;
 }
+footer {
+  background: #20b2aa;
+  color: #ffffff;
+  font-size: 16pt;
+  text-align: center;
+  padding: 20px 0;
+}
 /*# sourceMappingURL=style.css.map */

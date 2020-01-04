@@ -32,7 +32,7 @@
                </select>
                <button type="button" class="itt-btn">Доставить груз</button>
                <button type="button" class="itt-btn">Найти водителя</button>
-               <a href="/user/login" class="itt-login">Войти</a>
+               <a href="/login" class="itt-login">Войти</a>
             </div>
 
          </div>
@@ -190,6 +190,8 @@
          </div>
       </div>
    </div>
+
+   <footer>&copy; IT-Technology <?php echo date("Y"); ?></footer>
 
    <script>
        $(function($){
