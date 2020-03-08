@@ -21,6 +21,7 @@
   "autoload": {
     "psr-4": {
       "ITTech\\APP\\": "app/",
+      "ITTech\\API\\": "app/api/",
       "ITTech\\Modules\\": "modules/",
       "ITTech\\Plugins\\": "plug-ins/"
     }

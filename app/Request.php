@@ -81,6 +81,11 @@ class Request
         }
     }
 
+    /**
+     * Вернуть файл шаблона
+     * @param string $templateFile
+     * @return false|string
+     */
     public static function getTemplate(string $templateFile)
     {
         ob_start();
@@ -89,5 +94,21 @@ class Request
         ob_end_clean();
 
         return $str;
+    }
+
+    /**
+     * Выбор сегмента URL
+     * @param int $segment
+     * @return |null
+     */
+    public static function segment(int $segment)
+    {
+        $data = explode("/", $_SERVER["REQUEST_URI"]);
+        if(!empty($data[$segment]))
+        {
+            return $data[$segment];
+        }
+
+        return null;
     }
 }
