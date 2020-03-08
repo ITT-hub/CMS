@@ -103,7 +103,8 @@ class Request
      */
     public static function segment(int $segment)
     {
-        $data = explode("/", $_SERVER["REQUEST_URI"]);
+        $browserData = parse_url($_SERVER["REQUEST_SCHEME"]."://".$_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"]);
+        $data = explode("/", $browserData["path"]);
         if(!empty($data[$segment]))
         {
             return $data[$segment];

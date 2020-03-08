@@ -15,7 +15,9 @@
     "it-tech/orm": "v1.0.2",
     "it-tech/route": "dev-master",
     "it-tech/view": "dev-master",
-    "it-tech/cache": "dev-master"
+    "it-tech/cache": "dev-master",
+    "ext-curl": "*",
+    "ext-json": "*"
   },
   "require-dev": {},
   "autoload": {

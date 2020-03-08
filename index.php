@@ -7,17 +7,18 @@ use ITTech\APP\Main;
 use ITTech\Lib\Route;
 use ITTech\APP\Request;
 
-$main = new Main(__DIR__);
-
 /*
  * Подключить API
  */
 if(Request::segment(1) == "api")
 {
+    require_once __DIR__."/app/APIController.php";
     $api = new \ITTech\APP\APIController();
     $api->init();
     exit();
 }
+
+$main = new Main(__DIR__);
 
 /*
  * Загрузить модули, плагины
