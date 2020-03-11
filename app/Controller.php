@@ -18,7 +18,13 @@ class Controller
 {
     public function __construct()
     {
-        $ini = parse_ini_file(Main::$root."/_config.ini");
+        if(is_null(Main::$root))
+        {
+            $root = $_SERVER["DOCUMENT_ROOT"];
+        } else {
+            $root = Main::$root;
+        }
+        $ini = parse_ini_file($root."/_config.ini");
         Connect::create($ini);
     }
 

@@ -17,7 +17,7 @@ class Main
      * Корневая директория
      * @var string
      */
-    public static $root;
+    public static $root = null;
 
     /**
      * Main constructor.

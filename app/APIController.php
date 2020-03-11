@@ -68,7 +68,7 @@ class APIController
 
             // проверить и подключить класс
             $this->includeFile($methodData[0]);
-            $class      = "ITTech\\API\\".$methodData[0];
+            $class      = "ITTech\\APP\\api\\".$methodData[0];
             $method     = $methodData[1];
             $controller = new $class();
 

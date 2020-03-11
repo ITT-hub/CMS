@@ -11,6 +11,7 @@ use ITTech\APP\Options;
 use ITTech\APP\Redirect;
 use ITTech\APP\Render;
 use ITTech\APP\Session;
+use ITTech\ORM\Connect;
 
 /**
  * Class Auth
@@ -20,164 +21,50 @@ use ITTech\APP\Session;
  */
 class Auth extends Controller
 {
-    /**
-     * Проверить куки, авторизировать
-     * @return bool
-     */
-    public function coocies()
+    private $user;
+
+    public function __construct($userData = null)
     {
-        if(empty($_COOKIE["user"]))
+        parent::__construct();
+
+        if(!is_null($userData))
         {
-            return false;
+            $this->user = $userData;
         }
-
-        $file = Main::$root."/tmp/cache/".$_COOKIE["user"];
-        if(file_exists($file))
-        {
-            ob_start();
-            include $file;
-            $data = unserialize(ob_get_contents());
-            ob_end_clean();
-
-            if($data["time"] <= time())
-            {
-                return false;
-            }
-
-            $user = UserModel::find($data["uid"]);
-
-            if(strcmp($user->remember_password, $_COOKIE["user"]) == 0)
-            {
-                Session::set("user", $data);
-                return true;
-            }
-
-            return false;
-        }
-
-        return false;
     }
 
     /**
-     * Проверить авторизирован ли пользователь
-     * @return bool
-     */
-    public static function check()
-    {
-        $controller = new self();
-        if(!Session::get("user"))
-        {
-            return $controller->coocies();
-        }
-
-        return true;
-    }
-
-    /**
-     * Форма авторизации
-     */
-    public function login_form()
-    {
-        ob_start();
-        include __DIR__."/template/login_form.php";
-        $str = ob_get_contents();
-        ob_end_clean();
-
-        Render::title("Авторизация пользователя");
-        Render::desc("Войти на сайт");
-        Render::content($str);
-
-        return $this->render("login.php");
-    }
-
-    /**
-     * Авторизировать пользователя
-     *
-     * @param string $login
+     * Авторизация пользователя
+     * Использовать при условии что пользователь прошел проверку по телефону
+     * @param string $phone
      * @param string $password
-     * @param bool $remember
-     * @return string
+     * @return int|Auth
      */
-    public static function user(string $login, string $password, $remember = false)
+    public static function User(string $phone, string $password)
     {
-        $class = new self();
-        $user  = self::find_user($login);
-
-        if(!$user)
+        $model = UserModel::where("phone", $phone)->get();
+        // Пользователь не зарегестрирован
+        if(count($model) < 1)
         {
-            return "Пользователя не существует";
+            return 401;
         }
 
-        if($user->enable == 0)
+        // Пользователь не активирован
+        if($model[0]->phone_enable == 0)
         {
-            Session::flash("system", "Пользователь не активирован");
-            return Redirect::back();
+            return 402;
         }
 
-        if(password_verify($password, $user->password))
+        if(!password_verify($password, $model[0]->password))
         {
-            if($remember)
-            {
-                $class->remember($user->id, Options::get("remember_time"));
-            }
-
-            Session::set("user", ["uid" => $user->id, "phone" => $user->phone, "email" => $user->email]);
-            Redirect::back();
-        } else {
-            return "Не верно введен пароль";
+            return 403;
         }
+
+        return  new self($model[0]);
     }
 
-    /**
-     * Запомнить пользователя
-     * @param int $userID
-     * @param $remember_time
-     */
-    protected function remember(int $userID, $remember_time)
+    public function getUser()
     {
-        $user          = UserModel::find($userID);
-        $time          = time() + $remember_time;
-        $filename      = md5($user->email.time());
-        $data["uid"]   = $user->id;
-        $data["phone"] = $user->phone;
-        $data["email"] = $user->email;
-        $data["ip"]    = $_SERVER["REMOTE_ADDR"];
-        $data["time"]  = $time;
-
-        if(file_put_contents(Main::$root."/tmp/cache/".$filename, serialize($data)))
-        {
-            $user->remember_password = $filename;
-            setcookie("user", $filename, $time, "/");
-            $user->save();
-        }
-    }
-
-    /*
-     * Проверить существование пользователя
-     */
-    protected static function find_user($login)
-    {
-        $user = UserModel::where("name", $login)->get();
-
-        if(empty($user))
-        {
-            $user = UserModel::where("email", $login)->get();
-        }
-        if(empty($user))
-        {
-            $user = UserModel::where("phone", $login)->get();
-        }
-
-        if(empty($user))
-        {
-            $user = UserModel::where("phone", $login)->get();
-        }
-
-        if(!empty($user))
-        {
-            return $user[0];
-        }
-
-        return false;
+        return $this->user;
     }
 }
