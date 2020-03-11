@@ -17,11 +17,23 @@ use ITTech\Modules\User\UserModel;
 class Auth extends ApiTemplateController
 {
     /**
+     * Время действия токена сек.
+     * @var int 7 дней 604800
+     */
+    protected $remember_time‬;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->remember_time‬ = 3600;
+    }
+
+    /**
      * Авторизация пользователя
      * @param array $loginData
      * @return array
      */
-    public function Login(array $loginData)
+    public function Login(array $loginData): array
     {
         $model = UserModel::where("phone", $loginData["username"])->get();
 
@@ -44,4 +56,38 @@ class Auth extends ApiTemplateController
         return["status" => "Ok", "result" => ["token" => $token]];
     }
 
+    /**
+     * Проверка токена пользователя
+     * @param array $params
+     * @return array
+     */
+    public function check(array $params): array
+    {
+        try
+        {
+            $model = UserModel::where("token", $params["token"])->get();
+
+            if(count($model) < 1)
+            {
+                return["status" => "Error", "code" => 403, "message" => "Record not found"];
+            }
+
+            $date     = strtotime(date("Y-m-d H.i.s"));
+            $userDate = strtotime($model[0]->updated);
+            $remember = $date - $userDate;
+
+            if($remember >= $this->remember_time‬)
+            {
+                // авторизировать
+                return["status" => "Error", "code" => 403, "message" => "Нужна авторизация"];
+            }
+
+            unset($model[0]->password);
+            unset($model[0]->token);
+            return["status" => "Ok", "result" => ["user" => $model[0]]];
+        } catch (\ErrorException $e)
+        {
+            return["status" => "Error", "code" => $e->getCode(), "message" => $e->getMessage()];
+        }
+    }
 }
