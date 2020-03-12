@@ -37,23 +37,73 @@ class Auth extends ApiTemplateController
     {
         $model = UserModel::where("phone", $loginData["username"])->get();
 
+        // Авторизация по СМС
+        if(!empty($loginData["sms"]))
+        {
+            if($loginData["server"] != $loginData["сlient"])
+            {
+                return ["status" => "Error", "code" => 405, "message" => "Verification code does not match"];
+            }
+
+            // Пользователя нет в системе
+            if(count($model) < 1)
+            {
+               $model[0]               = new UserModel();
+               $model[0]->phone        = $loginData["username"];
+               $model[0]->phone_enable = 1;
+
+               $save = $model[0]->save();
+
+               if($save)
+               {
+                   $model = UserModel::where("id", $save)->get();
+                   return $this->user($model);
+               }
+
+               return ["status" => "Error", "code" => 407, "message" => "Failed to create user"];
+            }
+
+            return $this->user($model);
+        }
+
+        // Пользователь не существует
+        if(count($model) < 1)
+        {
+            return["status" => "Error", "code" => 408, "message" => "User does not exist"];
+        }
+
         // Пользователь не активирован
         if($model[0]->phone_enable == 0)
         {
             return["status" => "Error", "code" => 401, "message" => "User not activated"];
         }
 
+        // Пароль не верный
         if(!password_verify($loginData["password"], $model[0]->password))
         {
             return["status" => "Error", "code" => 402, "message" => "Password entered incorrectly"];
         }
 
-        $token = bin2hex(openssl_random_pseudo_bytes(40));
-        $model[0]->token = $token;
-        $model[0]->updated = date("Y-m-d H:i:s");
-        $model[0]->save();
+        return $this->user($model);
+    }
 
-        return["status" => "Ok", "result" => ["token" => $token]];
+    /**
+     * Авторизировать пользователя
+     * @param UserModel $model
+     * @return array
+     */
+    protected function user($model): array
+    {
+        $token             = bin2hex(openssl_random_pseudo_bytes(40));
+        $model[0]->token   = $token;
+        $model[0]->updated = date("Y-m-d H:i:s");
+
+        if($model[0]->save())
+        {
+            return ["status" => "Ok", "result" => ["token" => $token]];
+        }
+
+        return ["status" => "Error", "code" => 406, "message" => "Token Write Error"];
     }
 
     /**

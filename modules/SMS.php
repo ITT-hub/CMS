@@ -42,7 +42,6 @@ class SMS
 
     public function __construct(string $number)
     {
-        $iniFile = $_SERVER["DOCUMENT_ROOT"]."/_config.ini";
         $this->number = $number;
         $cfg = parse_ini_file($_SERVER["DOCUMENT_ROOT"]."/_config.ini");
         Connect::create($cfg);
