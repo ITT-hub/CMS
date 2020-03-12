@@ -3,11 +3,9 @@
  * Created 12.03.2020 13:10
  */
 
-namespace ITTech\APP;
+namespace ITTech\Modules;
 
 use ITTech\ORM\Connect;
-
-require_once $_SERVER["DOCUMENT_ROOT"]."/vendor/autoload.php";
 
 /**
  * Class SMS
